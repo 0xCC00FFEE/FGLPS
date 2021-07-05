@@ -1,3 +1,4 @@
-module v1
+module github.com/0xCC00FFEE/FGLPS
 
 go 1.16
+
