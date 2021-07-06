@@ -85,7 +85,7 @@ func main() {
 
 func showUsage() {
 	fmt.Println("")
-	fmt.Println("Purpose: Rapidly TCP scans a port range for open ports.")
+	fmt.Println("Purpose: Rapidly scans a TCP port range for open ports.")
 	fmt.Println("")
 	flag.Usage()
 	os.Exit(1)
