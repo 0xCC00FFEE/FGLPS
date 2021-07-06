@@ -12,7 +12,7 @@ import (
 func main() {
 	wg := sync.WaitGroup{}
 	portsChan := make(chan string)
-	resChan := make(chan string)
+	resultsChan := make(chan string)
 
 	argHost := flag.String("host", "", "Host to scan")
 	argFirstPort := flag.Int("firstPort", 1, "First port of port range to scan (1-65535)")
@@ -23,6 +23,10 @@ func main() {
 
 	showUsageInfo := false
 	if *argHost == "" {
+		showUsageInfo = true
+	}
+	if *argFirstPort > *argLastPort {
+		fmt.Println("ERROR: -firstPort cannot be > -lastPort")
 		showUsageInfo = true
 	}
 	if *argFirstPort < 1 || *argFirstPort > 65535 {
@@ -58,20 +62,25 @@ func main() {
 	}()
 
 	// Consuming events
-	for i := 0; i <= *argThreadsNum; i++ {
+	portRangeCount := *argLastPort - *argFirstPort + 1
+	maxParallelPortScans := *argThreadsNum
+	if portRangeCount < *argThreadsNum {
+		maxParallelPortScans = portRangeCount
+	}
+	for i := 1; i <= maxParallelPortScans; i++ {
 		wg.Add(1)
-		go portScanner(portsChan, resChan, &wg, *argPortTimeout)
+		go portScanner(portsChan, resultsChan, &wg, *argPortTimeout)
 	}
 
 	// Returning the results
 	go func() {
-		for result := range resChan {
+		for result := range resultsChan {
 			fmt.Println(result)
 		}
 	}()
 
 	wg.Wait()
-	close(resChan)
+	close(resultsChan)
 }
 
 func showUsage() {
@@ -83,12 +92,12 @@ func showUsage() {
 }
 
 // Scan a single port
-func portScanner(portsChan, resChan chan string, wg *sync.WaitGroup, portTimeout int) {
+func portScanner(portsChan, resultsChan chan string, wg *sync.WaitGroup, portTimeout int) {
 	defer wg.Done()
 	for targetHost := range portsChan {
 		_, err := net.DialTimeout("tcp", targetHost, time.Second*time.Duration(portTimeout))
 		if err == nil {
-			resChan <- targetHost
+			resultsChan <- targetHost
 		}
 	}
 }
