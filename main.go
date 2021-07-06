@@ -16,7 +16,7 @@ func main() {
 
 	argHost := flag.String("host", "", "Host to scan")
 	argFirstPort := flag.Int("firstPort", 1, "First port of port range to scan (1-65535)")
-	argLastPort := flag.Int("lastPort", 100, "Last port of port range to scan (1-65535)")
+	argLastPort := flag.Int("lastPort", 65535, "Last port of port range to scan (1-65535)")
 	argThreadsNum := flag.Int("threads", 65535, "Thread count. (maximum simultaneous port scans)")
 	argPortTimeout := flag.Int("portTimeout", 5, "Port timeout in seconds.")
 	flag.Parse()
