@@ -51,7 +51,10 @@ func main() {
 	}
 
 	// Pushing events into the channel
-	wg.Add(1)
+	// Incrementing the waitGroup by two
+	// One for the goroutine that pushes ports into the channel
+	// Another one for the goroutine that prints results at the end of the program
+	wg.Add(2)
 	go func() {
 		defer wg.Done()
 		for i := *argFirstPort; i <= *argLastPort; i++ {
