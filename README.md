@@ -2,10 +2,10 @@
 
 A highly concurrent TCP port scanner.
 
-## Compile on Linux
+## Compile (Linux)
 `go build -v -o fglps`
 
-## Run on Linux
+## Run (Linux)
 
 ### Scan a single host
 `./fglps -host localhost`
