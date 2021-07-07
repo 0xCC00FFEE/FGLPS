@@ -11,7 +11,7 @@ A highly concurrent TCP port scanner.
 `./fglps -host localhost`
 
 ### See the built-in help
-`./fglps --help`
+`./fglps -help`
 
 ## TODO
 - Add support for IP range scanning, instead of single host scanning.
