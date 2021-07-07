@@ -11,8 +11,6 @@ import (
 
 func main() {
 	wg := sync.WaitGroup{}
-	portsChan := make(chan string)
-	resultsChan := make(chan string)
 
 	argHost := flag.String("host", "", "Host to scan")
 	argFirstPort := flag.Int("firstPort", 1, "First port of port range to scan (1-65535)")
@@ -50,40 +48,24 @@ func main() {
 		showUsage()
 	}
 
-	// Pushing events into the channel
-	// Incrementing the waitGroup by two
-	// One for the goroutine that pushes ports into the channel
-	// Another one for the goroutine that prints results at the end of the program
-	wg.Add(2)
-	go func() {
-		defer wg.Done()
-		for i := *argFirstPort; i <= *argLastPort; i++ {
-			targetHost := fmt.Sprintf("%s:%d", *argHost, i)
-			portsChan <- targetHost
-		}
-		close(portsChan)
-	}()
+	fmt.Println("# INFO: Starting scan. Open ports will be listed below, in random order (for performance reasons).")
 
-	// Consuming events
-	portRangeCount := *argLastPort - *argFirstPort + 1
-	maxParallelPortScans := *argThreadsNum
-	if portRangeCount < *argThreadsNum {
-		maxParallelPortScans = portRangeCount
-	}
-	for i := 1; i <= maxParallelPortScans; i++ {
+	for i := *argFirstPort; i <= *argLastPort; i++ {
+		targetHostWithPort := fmt.Sprintf("%s:%d", *argHost, i)
+
+		// increment the wait group value to hold it open while the goroutine is still running
 		wg.Add(1)
-		go portScanner(portsChan, resultsChan, &wg, *argPortTimeout)
-	}
+		go func() {
+			// decrement the wait group value upon completion of the individual port scan
+			defer wg.Done()
 
-	// Returning the results
-	go func() {
-		for result := range resultsChan {
-			fmt.Println(result)
-		}
-	}()
+			if isTcpPortOpen(targetHostWithPort, *argPortTimeout) {
+				fmt.Println(targetHostWithPort)
+			}
+		}()
+	}
 
 	wg.Wait()
-	close(resultsChan)
 }
 
 func showUsage() {
@@ -94,13 +76,11 @@ func showUsage() {
 	os.Exit(1)
 }
 
-// Scan a single port
-func portScanner(portsChan, resultsChan chan string, wg *sync.WaitGroup, portTimeout int) {
-	defer wg.Done()
-	for targetHost := range portsChan {
-		_, err := net.DialTimeout("tcp", targetHost, time.Second*time.Duration(portTimeout))
-		if err == nil {
-			resultsChan <- targetHost
-		}
+// isTcpPortOpen returns true if the port accepts a TCP connection
+func isTcpPortOpen(targetHostWithPort string, portTimeout int) bool {
+	_, err := net.DialTimeout("tcp", targetHostWithPort, time.Second*time.Duration(portTimeout))
+	if err == nil {
+		return true
 	}
+	return false
 }
