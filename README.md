@@ -1,4 +1,4 @@
-# Fast GoLang Port Scanner
+# Fast TCP Port Scanner
 
 A highly concurrent TCP port scanner.
 
