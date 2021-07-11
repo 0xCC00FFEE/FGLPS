@@ -16,4 +16,5 @@ A highly concurrent TCP port scanner.
 ## TODO
 - Add support for IP range scanning, instead of single host scanning.
 - Add support for customizing the packets TCP headers.
+- Add support for Packet Header Fragmentation scanning method.
 - Check host validity before starting the actual scan.
