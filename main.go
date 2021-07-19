@@ -22,6 +22,11 @@ func main() {
 	showUsageInfo := false
 	if *argHost == "" {
 		showUsageInfo = true
+	} else {
+		err := checkForInvalidHostname(*argHost)
+		if err != nil {
+			fmt.Printf("ERROR: 'Hostname Test Failed' ... %v\n", err)
+		}
 	}
 	if *argFirstPort > *argLastPort {
 		fmt.Println("ERROR: -firstPort cannot be > -lastPort")
@@ -45,7 +50,7 @@ func main() {
 	}
 
 	if showUsageInfo {
-		showUsage()
+		showUsageAndExitAbnormally()
 	}
 
 	fmt.Println("# INFO: Starting scan. Open ports will be listed below, in random order (for performance reasons).")
@@ -68,7 +73,12 @@ func main() {
 	wg.Wait()
 }
 
-func showUsage() {
+func checkForInvalidHostname(hostname string) error {
+	_, err := net.LookupHost(hostname)
+	return err
+}
+
+func showUsageAndExitAbnormally() {
 	fmt.Println("")
 	fmt.Println("Purpose: Rapidly scans a TCP port range for open ports.")
 	fmt.Println("")
